@@ -262,6 +262,8 @@ class Timer extends React.Component {
   constructor(props) {
     super(props);
     this.handleDelete = this.handleDelete.bind(this);
+    // this.forceUpdateInterval = this.forceUpdateInterval.bind(this);
+    // this.forceUpdate = this.forceUpdate.bind(this);
   }
 
   handleDelete() {
@@ -269,9 +271,18 @@ class Timer extends React.Component {
       id: this.props.id
     })
   }
+
+  componentDidMount() {
+    this.forceUpdateInterval = setInterval(() => this.forceUpdate(), 50);
+  }
   
+  // Happens when component is deleted. Called before component is removed from the app
+  componentWillUnmount() {
+    clearInterval(this.forceUpdateInterval);
+  }
+
   render() {
-    const elapsedString = helpers.renderElapsedString(this.props.elapsed);
+    const elapsedString = helpers.renderElapsedString(this.props.elapsed, this.props.runningSince);
     return (
       <div className='ui centered card'>
         <div className='content'>
