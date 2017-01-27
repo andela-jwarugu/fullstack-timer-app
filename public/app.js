@@ -25,6 +25,18 @@ class TimersDashboard extends React.Component {
     this.handleDelete = this.handleDelete.bind(this);
     this.deleteTimer = this.deleteTimer.bind(this);
     this.updateTimer = this.updateTimer.bind(this);
+    this.handleStartClick = this.handleStartClick.bind(this);
+    this.handleStopClick = this.handleStopClick.bind(this);
+    this.startTimer = this.startTimer.bind(this);
+    this.stopTimer = this.stopTimer.bind(this);
+  }
+
+  handleStartClick(timerId) {
+    this.startTimer(timerId);
+  }
+
+  handleStopClick(timerId) {
+    this.stopTimer(timerId);
   }
 
   handleCreateFormSubmit(timer) {
@@ -66,6 +78,44 @@ class TimersDashboard extends React.Component {
       timers: this.state.timers.filter(timer => timer.id !== attr.id),
     })
   }
+
+  startTimer(timerId) {
+    const now = Date.now();
+
+    this.setState({
+      timers: this.state.timers.map((timer) => {
+        if(timer.id === timerId) {
+          return (
+            Object.assign({}, timer, {
+              runningSince: now,
+            })
+          )
+        } else {
+          return timer
+        }
+      })
+    });
+  }
+
+  stopTimer(timerId) {
+    const now = Date.now();
+
+    this.setState({
+      timers: this.state.timers.map((timer) => {
+        if(timer.id === timerId) {
+          const lastElapsed = now - timer.runningSince;
+          return (
+            Object.assign({}, timer, {
+              elapsed: timer.elapsed + lastElapsed,
+              runningSince: null,
+            })
+          )
+        } else {
+          return timer
+        }
+      })
+    });
+  }
   
   render() {
     return (
@@ -75,6 +125,8 @@ class TimersDashboard extends React.Component {
             timers={this.state.timers} 
             onFormSubmit={this.handleEditFormSubmit}
             handleDelete={this.handleDelete}
+            onStartClick={this.handleStartClick}
+            onStopClick={this.handleStopClick}
           />
           <ToggleableTimerForm
             onFormSubmit={this.handleCreateFormSubmit}
@@ -97,6 +149,8 @@ class EditableTimerList extends React.Component {
           runningSince={timer.runningSince}
           onFormSubmit={this.props.onFormSubmit}
           handleDelete={this.props.handleDelete}
+          onStartClick={this.props.onStartClick}
+          onStopClick={this.props.onStopClick}
       />
     ))
     return (
@@ -163,6 +217,8 @@ class EditableTimer extends React.Component {
           runningSince={this.props.runningSince}
           onEditClick={this.handleEditClick}
           onDelete={this.props.handleDelete}
+          onStartClick={this.props.onStartClick}
+          onStopClick={this.props.onStopClick}
         />
       )
     }
@@ -264,6 +320,16 @@ class Timer extends React.Component {
     this.handleDelete = this.handleDelete.bind(this);
     // this.forceUpdateInterval = this.forceUpdateInterval.bind(this);
     // this.forceUpdate = this.forceUpdate.bind(this);
+    this.handleStartClick = this.handleStartClick.bind(this);
+    this.handleStopClick = this.handleStopClick.bind(this);
+  }
+
+  handleStartClick() {
+    this.props.onStartClick(this.props.id);
+  }
+
+  handleStopClick() {
+    this.props.onStopClick(this.props.id);
   }
 
   handleDelete() {
@@ -304,10 +370,33 @@ class Timer extends React.Component {
             </span>
           </div>
         </div>
-        <div className='ui bottom attached blue basic button'>
-          Start
-        </div>
+        <TimerButton
+          timerIsRunning={!!this.props.runningSince}
+          onStartClick={this.handleStartClick}
+          onStopClick={this.handleStopClick}
+        />
       </div>
+    );
+  }
+}
+
+class TimerButton extends React.Component {
+  render() {
+    return (
+      this.props.timerIsRunning ? (
+        <div
+          className='ui bottom attached red basic button' 
+          onClick={this.props.onStopClick}
+        > 
+          Stop
+        </div>
+      ) : (
+        <div 
+          className='ui bottom attached green basic button' 
+          onClick={this.props.onStartClick}
+        >
+          Start
+        </div> )
     );
   }
 }
