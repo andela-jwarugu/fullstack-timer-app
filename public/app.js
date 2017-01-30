@@ -2,22 +2,7 @@ class TimersDashboard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      timers: [
-        {
-          title: 'Practice squat',
-          project: 'Gym Chores',
-          id: uuid.v4(),
-          elapsed: 5456099,
-          runningSince: Date.now(),
-        },
-        {
-          title: 'Bake squash',
-          project: 'Kitchen Chores',
-          id: uuid.v4(),
-          elapsed: 1273998,
-          runningSince: null,
-        },    
-      ]
+      timers: []
     };
     this.handleCreateFormSubmit = this.handleCreateFormSubmit.bind(this);
     this.handleEditFormSubmit = this.handleEditFormSubmit.bind(this);
@@ -29,6 +14,7 @@ class TimersDashboard extends React.Component {
     this.handleStopClick = this.handleStopClick.bind(this);
     this.startTimer = this.startTimer.bind(this);
     this.stopTimer = this.stopTimer.bind(this);
+    this.loadTimersFromServers = this.loadTimersFromServers.bind(this);
   }
 
   handleStartClick(timerId) {
@@ -56,6 +42,8 @@ class TimersDashboard extends React.Component {
     this.setState({
       timers: this.state.timers.concat(t)
     });
+
+    client.createTimer(timer)
   }
 
   updateTimer(attrs) {
@@ -71,11 +59,17 @@ class TimersDashboard extends React.Component {
         }
       }) 
     })
+
+    client.updateTimer(attrs)
   }
 
   deleteTimer(attr) {
     this.setState({
       timers: this.state.timers.filter(timer => timer.id !== attr.id),
+    })
+
+    client.deleteTimer({
+      id: attr.id
     })
   }
 
@@ -95,6 +89,11 @@ class TimersDashboard extends React.Component {
         }
       })
     });
+
+    client.startTimer({
+      id: timerId,
+      start: now
+    })
   }
 
   stopTimer(timerId) {
@@ -115,8 +114,24 @@ class TimersDashboard extends React.Component {
         }
       })
     });
+
+    client.stopTimer({
+      id: timerId,
+      start: now
+    })
   }
   
+  componentDidMount(){
+    this.loadTimersFromServers();
+    setInterval(this.loadTimersFromServers, 5000);
+  }
+
+  loadTimersFromServers(){
+    client.getTimers((setTimers) => {
+      this.setState({timers: setTimers})
+    })
+  }
+
   render() {
     return (
       <div className='ui three column centered grid'>
