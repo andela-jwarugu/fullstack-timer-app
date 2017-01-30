@@ -117,7 +117,7 @@ class TimersDashboard extends React.Component {
 
     client.stopTimer({
       id: timerId,
-      start: now
+      stop: now
     })
   }
   
